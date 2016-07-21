@@ -15,6 +15,7 @@ dependencies {
     compile 'com.beust:jcommander:1.48'
     compile 'com.squareup:javapoet:1.7.0'
     compile 'com.google.guava:guava:19.0'
+    compile 'org.projectlombok:lombok:1.16.8'
 
     jar {
         from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }

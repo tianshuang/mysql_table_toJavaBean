@@ -5,6 +5,7 @@ import com.beust.jcommander.Parameter;
 import com.google.common.base.CaseFormat;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
+import lombok.Data;
 
 import javax.lang.model.element.Modifier;
 import java.io.IOException;
@@ -39,7 +40,7 @@ public class GenerateJavaCodeFromMysql {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM " + table + " LIMIT 1");
             ResultSetMetaData metadata = resultSet.getMetaData();
 
-            TypeSpec.Builder helloWorldBuilder = TypeSpec.classBuilder("HelloWorld")
+            TypeSpec.Builder helloWorldBuilder = TypeSpec.classBuilder("HelloWorld").addAnnotation(Data.class)
                     .addModifiers(Modifier.PUBLIC);
             for (int i = 1; i <= metadata.getColumnCount(); i++) {
                 String columnClass = metadata.getColumnClassName(i);
