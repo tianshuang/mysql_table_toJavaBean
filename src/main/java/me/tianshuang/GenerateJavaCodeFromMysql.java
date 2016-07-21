@@ -52,7 +52,7 @@ public class GenerateJavaCodeFromMysql {
             ResultSet resultSet = preparedStatement.executeQuery();
             ResultSetMetaData metadata = resultSet.getMetaData();
 
-            TypeSpec.Builder builder = TypeSpec.classBuilder(lowerUnderscoreToLowerCamel(table)).addAnnotation(Data.class)
+            TypeSpec.Builder builder = TypeSpec.classBuilder(lowerUnderscoreToUpperCamel(table)).addAnnotation(Data.class)
                     .addModifiers(Modifier.PUBLIC);
             for (int i = 1; i <= metadata.getColumnCount(); i++) {
                 String columnClass = metadata.getColumnClassName(i);
@@ -93,6 +93,10 @@ public class GenerateJavaCodeFromMysql {
 
     private String lowerUnderscoreToLowerCamel(String string) {
         return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, string);
+    }
+
+    private String lowerUnderscoreToUpperCamel(String string) {
+        return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, string);
     }
 
 }
