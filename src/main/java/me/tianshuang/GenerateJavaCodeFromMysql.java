@@ -59,6 +59,7 @@ public class GenerateJavaCodeFromMysql {
                 Class clazz = null;
                 switch (columnClass) {
                     case "java.math.BigInteger":
+                    case "java.lang.Long":
                         clazz = Long.class;
                         break;
                     case "java.lang.Integer":
@@ -70,6 +71,8 @@ public class GenerateJavaCodeFromMysql {
                     case "java.sql.Timestamp":
                         clazz = LocalDateTime.class;
                         break;
+                    default:
+                        System.out.println(columnClass);
                 }
                 String fieldName = lowerUnderscoreToLowerCamel(metadata.getColumnName(i));
                 FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(clazz, fieldName)
