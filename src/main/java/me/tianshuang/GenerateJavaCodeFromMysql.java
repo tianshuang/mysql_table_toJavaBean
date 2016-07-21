@@ -3,6 +3,8 @@ package me.tianshuang;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.google.common.base.CaseFormat;
+import com.mysql.jdbc.StringUtils;
+import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
 import lombok.Data;
@@ -12,6 +14,8 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Poison on 7/21/2016.
@@ -26,6 +30,8 @@ public class GenerateJavaCodeFromMysql {
     private String password;
     @Parameter(names = "-table", required = true)
     private String table;
+    @Parameter(names = "-packageName", required = true)
+    private String packageName;
 
     public static void main(String[] args) {
         GenerateJavaCodeFromMysql metadataColumn = new GenerateJavaCodeFromMysql();
@@ -36,11 +42,17 @@ public class GenerateJavaCodeFromMysql {
     private void run() {
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
 
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM " + table + " LIMIT 1");
+            Map<String, String> fieldCommentMap = new HashMap<>();
+            ResultSet fieldCommentResultSet = connection.prepareStatement("SHOW FULL COLUMNS FROM " + table).executeQuery();
+            while (fieldCommentResultSet.next()) {
+                fieldCommentMap.put(fieldCommentResultSet.getNString("Field"), fieldCommentResultSet.getNString("Comment"));
+            }
+
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM " + table + " LIMIT 1");
+            ResultSet resultSet = preparedStatement.executeQuery();
             ResultSetMetaData metadata = resultSet.getMetaData();
 
-            TypeSpec.Builder helloWorldBuilder = TypeSpec.classBuilder("HelloWorld").addAnnotation(Data.class)
+            TypeSpec.Builder builder = TypeSpec.classBuilder(lowerUnderscoreToLowerCamel(table)).addAnnotation(Data.class)
                     .addModifiers(Modifier.PUBLIC);
             for (int i = 1; i <= metadata.getColumnCount(); i++) {
                 String columnClass = metadata.getColumnClassName(i);
@@ -59,13 +71,17 @@ public class GenerateJavaCodeFromMysql {
                         clazz = LocalDateTime.class;
                         break;
                 }
-                String columnName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, metadata.getColumnName(i));
-                helloWorldBuilder.addField(clazz, columnName, Modifier.PRIVATE);
+                String fieldName = lowerUnderscoreToLowerCamel(metadata.getColumnName(i));
+                FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(clazz, fieldName)
+                        .addModifiers(Modifier.PRIVATE);
+                String fieldComment = fieldCommentMap.get(metadata.getColumnName(i));
+                if (!StringUtils.isNullOrEmpty(fieldComment)) {
+                    fieldSpecBuilder.addJavadoc(fieldComment + "\n");
+                }
+                builder.addField(fieldSpecBuilder.build());
             }
 
-            TypeSpec helloWorld = helloWorldBuilder.build();
-
-            JavaFile javaFile = JavaFile.builder("com.example.helloworld", helloWorld)
+            JavaFile javaFile = JavaFile.builder(packageName, builder.build())
                     .build();
 
             javaFile.writeTo(Paths.get("."));
@@ -74,4 +90,9 @@ public class GenerateJavaCodeFromMysql {
             e.printStackTrace();
         }
     }
+
+    private String lowerUnderscoreToLowerCamel(String string) {
+        return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, string);
+    }
+
 }
