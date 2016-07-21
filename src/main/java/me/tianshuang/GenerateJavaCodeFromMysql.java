@@ -34,9 +34,9 @@ public class GenerateJavaCodeFromMysql {
     private String packageName;
 
     public static void main(String[] args) {
-        GenerateJavaCodeFromMysql metadataColumn = new GenerateJavaCodeFromMysql();
-        new JCommander(metadataColumn, args);
-        metadataColumn.run();
+        GenerateJavaCodeFromMysql generateJavaCodeFromMysql = new GenerateJavaCodeFromMysql();
+        new JCommander(generateJavaCodeFromMysql, args);
+        generateJavaCodeFromMysql.run();
     }
 
     private void run() {
