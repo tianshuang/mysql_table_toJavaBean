@@ -1,0 +1,26 @@
+apply plugin: 'idea'
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    testCompile 'junit:junit:4.12'
+
+    compile 'mysql:mysql-connector-java:5.1.38'
+    compile 'com.beust:jcommander:1.48'
+    compile 'com.squareup:javapoet:1.7.0'
+    compile 'com.google.guava:guava:19.0'
+
+    jar {
+        from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+        manifest {
+            attributes 'Main-Class': 'me.tianshuang.GenerateJavaCodeFromMysql'
+        }
+    }
+
+}
