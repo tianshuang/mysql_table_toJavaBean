@@ -1,4 +1,4 @@
-# mysql_table_to_java_bean
+# mysql_table_toJavaBean
 convert mysql table structure to java bean
 
 ##TODO
