@@ -11,6 +11,8 @@ import lombok.Data;
 
 import javax.lang.model.element.Modifier;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -30,8 +32,8 @@ public class GenerateJavaCodeFromMysql {
     private String password;
     @Parameter(names = "-table", required = true)
     private String table;
-    @Parameter(names = "-packageName", required = true)
-    private String packageName;
+    @Parameter(names = "-packageName")
+    private String packageName = "";
 
     public static void main(String[] args) {
         GenerateJavaCodeFromMysql generateJavaCodeFromMysql = new GenerateJavaCodeFromMysql();
@@ -59,18 +61,37 @@ public class GenerateJavaCodeFromMysql {
                     String columnClass = metadata.getColumnClassName(i);
                     Class clazz = null;
                     switch (columnClass) {
-                        case "java.math.BigInteger":
-                        case "java.lang.Long":
-                            clazz = Long.class;
-                            break;
                         case "java.lang.Integer":
                             clazz = Integer.class;
                             break;
                         case "java.lang.String":
                             clazz = String.class;
                             break;
+                        case "java.lang.Long":
+                            clazz = Long.class;
+                            break;
+                        case "java.lang.Boolean":
+                            clazz = Boolean.class;
+                            break;
+                        case "java.lang.Float":
+                            clazz = Float.class;
+                            break;
+                        case "java.lang.Double":
+                            clazz = Double.class;
+                            break;
+                        case "java.math.BigDecimal":
+                            clazz = BigDecimal.class;
+                            break;
+                        case "java.math.BigInteger":
+                            clazz = BigInteger.class;
+                            break;
+                        case "java.sql.Date":
+                        case "java.sql.Time":
                         case "java.sql.Timestamp":
                             clazz = LocalDateTime.class;
+                            break;
+                        case "[B":
+                            clazz = byte[].class;
                             break;
                         default:
                             System.out.println(columnClass);
