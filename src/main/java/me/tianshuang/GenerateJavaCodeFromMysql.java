@@ -121,8 +121,7 @@ public class GenerateJavaCodeFromMysql {
                         builder.addField(fieldSpecBuilder.build());
                     }
 
-                    JavaFile javaFile = JavaFile.builder(packageName, builder.build())
-                            .build();
+                    JavaFile javaFile = JavaFile.builder(packageName, builder.build()).skipJavaLangImports(true).indent("    ").build();
                     javaFile.writeTo(Paths.get("."));
                 }
             }
