@@ -16,7 +16,9 @@ import java.math.BigInteger;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,8 +32,8 @@ public class GenerateJavaCodeFromMysql {
     private String username;
     @Parameter(names = "-password", required = true)
     private String password;
-    @Parameter(names = "-table", required = true)
-    private String table;
+    @Parameter(names = "-tables")
+    private List<String> tables = new ArrayList<>();
     @Parameter(names = "-packageName")
     private String packageName = "";
 
@@ -43,72 +45,81 @@ public class GenerateJavaCodeFromMysql {
 
     private void run() {
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
-
-            Map<String, String> fieldCommentMap = new HashMap<>();
-            try (PreparedStatement preparedStatement = connection.prepareStatement("SHOW FULL COLUMNS FROM " + table)) {
-                ResultSet fieldCommentResultSet = preparedStatement.executeQuery();
-                while (fieldCommentResultSet.next()) {
-                    fieldCommentMap.put(fieldCommentResultSet.getNString("Field"), fieldCommentResultSet.getNString("Comment"));
+            if (tables.isEmpty()) {
+                DatabaseMetaData databaseMetaData = connection.getMetaData();
+                ResultSet resultSet = databaseMetaData.getTables(null, null, "%", null);
+                while (resultSet.next()) {
+                    tables.add(resultSet.getString(3));
                 }
             }
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM " + table + " LIMIT 1")) {
-                ResultSet resultSet = preparedStatement.executeQuery();
-                ResultSetMetaData metadata = resultSet.getMetaData();
-                TypeSpec.Builder builder = TypeSpec.classBuilder(lowerUnderscoreToUpperCamel(table)).addAnnotation(Data.class)
-                        .addModifiers(Modifier.PUBLIC);
-                for (int i = 1; i <= metadata.getColumnCount(); i++) {
-                    String columnClass = metadata.getColumnClassName(i);
-                    Class clazz = null;
-                    switch (columnClass) {
-                        case "java.lang.Integer":
-                            clazz = Integer.class;
-                            break;
-                        case "java.lang.String":
-                            clazz = String.class;
-                            break;
-                        case "java.lang.Long":
-                            clazz = Long.class;
-                            break;
-                        case "java.lang.Boolean":
-                            clazz = Boolean.class;
-                            break;
-                        case "java.lang.Float":
-                            clazz = Float.class;
-                            break;
-                        case "java.lang.Double":
-                            clazz = Double.class;
-                            break;
-                        case "java.math.BigDecimal":
-                            clazz = BigDecimal.class;
-                            break;
-                        case "java.math.BigInteger":
-                            clazz = BigInteger.class;
-                            break;
-                        case "java.sql.Date":
-                        case "java.sql.Time":
-                        case "java.sql.Timestamp":
-                            clazz = LocalDateTime.class;
-                            break;
-                        case "[B":
-                            clazz = byte[].class;
-                            break;
-                        default:
-                            System.out.println(columnClass);
+            for (String table : tables) {
+                Map<String, String> fieldCommentMap = new HashMap<>();
+                try (PreparedStatement preparedStatement = connection.prepareStatement("SHOW FULL COLUMNS FROM " + table)) {
+                    ResultSet fieldCommentResultSet = preparedStatement.executeQuery();
+                    while (fieldCommentResultSet.next()) {
+                        fieldCommentMap.put(fieldCommentResultSet.getNString("Field"), fieldCommentResultSet.getNString("Comment"));
                     }
-                    String fieldName = lowerUnderscoreToLowerCamel(metadata.getColumnName(i));
-                    FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(clazz, fieldName)
-                            .addModifiers(Modifier.PRIVATE);
-                    String fieldComment = fieldCommentMap.get(metadata.getColumnName(i));
-                    if (!StringUtils.isNullOrEmpty(fieldComment)) {
-                        fieldSpecBuilder.addJavadoc(fieldComment + "\n");
-                    }
-                    builder.addField(fieldSpecBuilder.build());
                 }
 
-                JavaFile javaFile = JavaFile.builder(packageName, builder.build())
-                        .build();
-                javaFile.writeTo(Paths.get("."));
+                try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM " + table + " LIMIT 1")) {
+                    ResultSet resultSet = preparedStatement.executeQuery();
+                    ResultSetMetaData metadata = resultSet.getMetaData();
+                    TypeSpec.Builder builder = TypeSpec.classBuilder(lowerUnderscoreToUpperCamel(table)).addAnnotation(Data.class)
+                            .addModifiers(Modifier.PUBLIC);
+                    for (int i = 1; i <= metadata.getColumnCount(); i++) {
+                        String columnClass = metadata.getColumnClassName(i);
+                        Class clazz = null;
+                        switch (columnClass) {
+                            case "java.lang.Integer":
+                                clazz = Integer.class;
+                                break;
+                            case "java.lang.String":
+                                clazz = String.class;
+                                break;
+                            case "java.lang.Long":
+                                clazz = Long.class;
+                                break;
+                            case "java.lang.Boolean":
+                                clazz = Boolean.class;
+                                break;
+                            case "java.lang.Float":
+                                clazz = Float.class;
+                                break;
+                            case "java.lang.Double":
+                                clazz = Double.class;
+                                break;
+                            case "java.math.BigDecimal":
+                                clazz = BigDecimal.class;
+                                break;
+                            case "java.math.BigInteger":
+                                clazz = BigInteger.class;
+                                break;
+                            case "java.sql.Date":
+                            case "java.sql.Time":
+                            case "java.sql.Timestamp":
+                                clazz = LocalDateTime.class;
+                                break;
+                            case "[B":
+                                clazz = byte[].class;
+                                break;
+                            default:
+                                System.out.println(columnClass);
+                        }
+                        String fieldName = lowerUnderscoreToLowerCamel(metadata.getColumnName(i));
+                        FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(clazz, fieldName)
+                                .addModifiers(Modifier.PRIVATE);
+                        String fieldComment = fieldCommentMap.get(metadata.getColumnName(i));
+                        if (!StringUtils.isNullOrEmpty(fieldComment)) {
+                            fieldSpecBuilder.addJavadoc(fieldComment + "\n");
+                        }
+                        builder.addField(fieldSpecBuilder.build());
+                    }
+
+                    JavaFile javaFile = JavaFile.builder(packageName, builder.build())
+                            .build();
+                    javaFile.writeTo(Paths.get("."));
+                }
             }
         } catch (SQLException | IOException e) {
             e.printStackTrace();
