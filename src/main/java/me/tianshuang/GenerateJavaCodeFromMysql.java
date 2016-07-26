@@ -8,6 +8,7 @@ import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
 import lombok.Data;
+import org.apache.commons.lang3.SystemUtils;
 
 import javax.lang.model.element.Modifier;
 import java.io.IOException;
@@ -98,7 +99,11 @@ public class GenerateJavaCodeFromMysql {
                             case "java.sql.Date":
                             case "java.sql.Time":
                             case "java.sql.Timestamp":
-                                clazz = LocalDateTime.class;
+                                if (SystemUtils.IS_JAVA_1_8 || SystemUtils.IS_JAVA_1_9) {
+                                    clazz = LocalDateTime.class;
+                                } else {
+                                    clazz = java.util.Date.class;
+                                }
                                 break;
                             case "[B":
                                 clazz = byte[].class;

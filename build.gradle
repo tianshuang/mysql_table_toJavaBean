@@ -1,8 +1,7 @@
 apply plugin: 'idea'
 apply plugin: 'java'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 1.7
 
 repositories {
     jcenter()
@@ -16,6 +15,7 @@ dependencies {
     compile 'com.squareup:javapoet:1.7.0'
     compile 'com.google.guava:guava:19.0'
     compile 'org.projectlombok:lombok:1.16.8'
+    compile 'org.apache.commons:commons-lang3:3.4'
 
     jar {
         from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
