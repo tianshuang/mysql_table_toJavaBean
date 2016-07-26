@@ -3,7 +3,7 @@ package me.tianshuang;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.google.common.base.CaseFormat;
-import com.mysql.jdbc.StringUtils;
+import com.mysql.cj.core.util.StringUtils;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
