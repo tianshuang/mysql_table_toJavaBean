@@ -4,9 +4,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.google.common.base.CaseFormat;
 import com.mysql.cj.core.util.StringUtils;
-import com.squareup.javapoet.FieldSpec;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 import lombok.Data;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -37,6 +35,10 @@ public class GenerateJavaCodeFromMysql {
     private List<String> tables = new ArrayList<>();
     @Parameter(names = "-packageName")
     private String packageName = "";
+    @Parameter(names = "-useLocalDateTime")
+    private boolean useLocalDateTime;
+    @Parameter(names = "-useLombok")
+    private boolean useLombok;
 
     public static void main(String[] args) {
         GenerateJavaCodeFromMysql generateJavaCodeFromMysql = new GenerateJavaCodeFromMysql();
@@ -45,6 +47,13 @@ public class GenerateJavaCodeFromMysql {
     }
 
     private void run() {
+
+        if (url.contains("?")) {
+            url += "&serverTimezone=UTC";
+        } else {
+            url += "?serverTimezone=UTC";
+        }
+
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
             if (tables.isEmpty()) {
                 DatabaseMetaData databaseMetaData = connection.getMetaData();
@@ -66,8 +75,13 @@ public class GenerateJavaCodeFromMysql {
                 try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM " + table + " LIMIT 1")) {
                     ResultSet resultSet = preparedStatement.executeQuery();
                     ResultSetMetaData metadata = resultSet.getMetaData();
-                    TypeSpec.Builder builder = TypeSpec.classBuilder(lowerUnderscoreToUpperCamel(table)).addAnnotation(Data.class)
-                            .addModifiers(Modifier.PUBLIC);
+                    TypeSpec.Builder builder = TypeSpec.classBuilder(lowerUnderscoreToUpperCamel(table)).addModifiers(Modifier.PUBLIC);
+                    if (useLombok) {
+                        builder.addAnnotation(Data.class);
+                    }
+
+                    List<Field> fieldList = new ArrayList<>();
+
                     for (int i = 1; i <= metadata.getColumnCount(); i++) {
                         String columnClass = metadata.getColumnClassName(i);
                         Class clazz = null;
@@ -99,7 +113,7 @@ public class GenerateJavaCodeFromMysql {
                             case "java.sql.Date":
                             case "java.sql.Time":
                             case "java.sql.Timestamp":
-                                if (SystemUtils.IS_JAVA_1_8 || SystemUtils.IS_JAVA_1_9) {
+                                if (useLocalDateTime && (SystemUtils.IS_JAVA_1_8 || SystemUtils.IS_JAVA_1_9)) {
                                     clazz = LocalDateTime.class;
                                 } else {
                                     clazz = java.util.Date.class;
@@ -114,12 +128,15 @@ public class GenerateJavaCodeFromMysql {
                         String fieldName = lowerUnderscoreToLowerCamel(metadata.getColumnName(i));
                         FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(clazz, fieldName)
                                 .addModifiers(Modifier.PRIVATE);
+                        fieldList.add(new Field(clazz, fieldName));
                         String fieldComment = fieldCommentMap.get(metadata.getColumnName(i));
                         if (!StringUtils.isNullOrEmpty(fieldComment)) {
                             fieldSpecBuilder.addJavadoc(fieldComment + "\n");
                         }
                         builder.addField(fieldSpecBuilder.build());
                     }
+
+                    generateGetterAndSetter(builder, fieldList);
 
                     JavaFile javaFile = JavaFile.builder(packageName, builder.build()).skipJavaLangImports(true).indent("    ").build();
                     javaFile.writeTo(Paths.get("."));
@@ -130,12 +147,32 @@ public class GenerateJavaCodeFromMysql {
         }
     }
 
+    private void generateGetterAndSetter(TypeSpec.Builder builder, List<Field> fieldList) {
+        for (Field field : fieldList) {
+            MethodSpec.Builder getMethodSpecBuilder;
+            if (field.getClazz() == Boolean.class) {
+                getMethodSpecBuilder = MethodSpec.methodBuilder("is" + lowerCamelToUpperCamel(field.getName()));
+            } else {
+                getMethodSpecBuilder = MethodSpec.methodBuilder("get" + lowerCamelToUpperCamel(field.getName()));
+            }
+            MethodSpec getMethodSpec = getMethodSpecBuilder.addModifiers(Modifier.PUBLIC).returns(field.getClazz()).addStatement("return " + field.getName()).build();
+            builder.addMethod(getMethodSpec);
+
+            MethodSpec setMethodSpec = MethodSpec.methodBuilder("set" + lowerCamelToUpperCamel(field.getName())).addModifiers(Modifier.PUBLIC).returns(TypeName.VOID).addParameter(field.getClazz(), field.getName()).addStatement("this." + field.getName() + " = " + field.getName()).build();
+            builder.addMethod(setMethodSpec);
+        }
+    }
+
     private String lowerUnderscoreToLowerCamel(String string) {
         return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, string);
     }
 
     private String lowerUnderscoreToUpperCamel(String string) {
         return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, string);
+    }
+
+    private String lowerCamelToUpperCamel(String string) {
+        return CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, string);
     }
 
 }
