@@ -77,7 +77,6 @@ public class GenerateJavaCodeFromMysql {
                     ResultSetMetaData metadata = resultSet.getMetaData();
                     TypeSpec.Builder builder = TypeSpec.classBuilder(lowerUnderscoreToUpperCamel(table)).addModifiers(Modifier.PUBLIC);
 
-
                     List<Field> fieldList = new ArrayList<>();
 
                     for (int i = 1; i <= metadata.getColumnCount(); i++) {
