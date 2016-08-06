@@ -7,7 +7,8 @@
 ### Prerequisites
 - Java 7 and above
 
-Here is a quick example:
+[Download from here](https://github.com/tianshuang/mysql_table_toJavaBean/releases/download/v1.0/mysql_table_toJavaBean.jar), or you can compile your own.<br />
+Here is a quick example():
 ```
 java -Dfile.encoding=UTF8 -jar mysql_table_toJavaBean.jar -url jdbc:mysql://host/database -tables ******** -username ******** -password ********
 ```
