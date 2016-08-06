@@ -76,9 +76,7 @@ public class GenerateJavaCodeFromMysql {
                     ResultSet resultSet = preparedStatement.executeQuery();
                     ResultSetMetaData metadata = resultSet.getMetaData();
                     TypeSpec.Builder builder = TypeSpec.classBuilder(lowerUnderscoreToUpperCamel(table)).addModifiers(Modifier.PUBLIC);
-                    if (useLombok) {
-                        builder.addAnnotation(Data.class);
-                    }
+
 
                     List<Field> fieldList = new ArrayList<>();
 
@@ -136,7 +134,11 @@ public class GenerateJavaCodeFromMysql {
                         builder.addField(fieldSpecBuilder.build());
                     }
 
-                    generateGetterAndSetter(builder, fieldList);
+                    if (useLombok) {
+                        builder.addAnnotation(Data.class);
+                    } else {
+                        generateGetterAndSetter(builder, fieldList);
+                    }
 
                     JavaFile javaFile = JavaFile.builder(packageName, builder.build()).skipJavaLangImports(true).indent("    ").build();
                     javaFile.writeTo(Paths.get("."));
