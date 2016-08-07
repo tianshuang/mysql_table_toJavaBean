@@ -35,10 +35,10 @@ If you do not set this property, it will convert all tables in the database. ava
 This property sets the Java Bean belongs to.
 
 &#10062;``useLombok``<br/>
-if use this property, it will generate annotation @Data on class level instead of getter and setter methods in class.
+If use this property, it will generate annotation @Data on class level instead of getter and setter methods in class.
 
 &#10062;``useLocalDateTime``<br/>
-if use this property, it will generate java.time.LocalDateTime instead of java.util.Date when you run this jar with JDK8+.
+If use this property, it will generate java.time.LocalDateTime instead of java.util.Date when you run this jar with JDK8+.
 
 ### Contributions
 Welcome to contribute.
