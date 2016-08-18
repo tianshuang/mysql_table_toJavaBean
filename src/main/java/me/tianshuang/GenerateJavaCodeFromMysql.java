@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.file.Paths;
 import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +36,8 @@ public class GenerateJavaCodeFromMysql {
     private List<String> tables = new ArrayList<>();
     @Parameter(names = "-packageName")
     private String packageName = "";
+    @Parameter(names = "-useLocalDate")
+    private boolean useLocalDate;
     @Parameter(names = "-useLocalDateTime")
     private boolean useLocalDateTime;
     @Parameter(names = "-useLombok")
@@ -108,6 +111,12 @@ public class GenerateJavaCodeFromMysql {
                                 clazz = BigInteger.class;
                                 break;
                             case "java.sql.Date":
+                                if (useLocalDate && (SystemUtils.IS_JAVA_1_8 || SystemUtils.IS_JAVA_1_9)) {
+                                    clazz = LocalDate.class;
+                                } else {
+                                    clazz = java.util.Date.class;
+                                }
+                                break;
                             case "java.sql.Time":
                             case "java.sql.Timestamp":
                                 if (useLocalDateTime && (SystemUtils.IS_JAVA_1_8 || SystemUtils.IS_JAVA_1_9)) {
