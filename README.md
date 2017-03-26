@@ -7,41 +7,12 @@
 ### Prerequisites
 - Java 7 and above
 
-[Download from here](https://github.com/tianshuang/mysql_table_toJavaBean/releases/download/v1.0.1/mysql_table_toJavaBean.jar), or you can compile your own.<br />
+[Download jar from here](https://storage.tianshuang.me/2017/03/mysql_table_toJavaBean.jar), or you can compile your own.<br />
+[Download config file template from here](https://storage.tianshuang.me/2017/03/config.json), and replace with your config.<br />
 Here is a quick example:
 ```
-java -Dfile.encoding=UTF8 -jar mysql_table_toJavaBean.jar -url jdbc:mysql://host/database -tables ******** -username ******** -password ********
+java -Dfile.encoding=UTF8 -jar mysql_table_toJavaBean.jar
 ```
-
-### Supported Parameters
-
-#### required
-
-&#128288;``url``<br/>
-This property sets the jdbc url.
-
-&#128288;``username``<br/>
-This property sets the authentication username used when obtaining connection.
-
-&#128288;``password``<br/>
-This property sets the authentication password used when obtaining connection.
-
-#### optional
-
-&#128288;``tables``<br/>
-If you do not set this property, it will convert all tables in the database. available multiple tables separated by commas.
-
-&#128288;``packageName``<br/>
-This property sets the Java Bean belongs to.
-
-&#10062;``useLombok``<br/>
-if use this property, it will generate annotation @Data on class level instead of getter and setter methods in class.
-
-&#10062;``useLocalDate``<br/>
-if use this property, it will map date(mysql) to java.time.LocalDate instead of java.util.Date when you run this jar with JDK8+.
-
-&#10062;``useLocalDateTime``<br/>
-if use this property, it will map datetime(mysql) to java.time.LocalDateTime instead of java.util.Date when you run this jar with JDK8+.
 
 ### Contributions
 Welcome to contribute.

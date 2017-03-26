@@ -11,11 +11,11 @@ dependencies {
     testCompile 'junit:junit:4.12'
 
     compile 'mysql:mysql-connector-java:6.0.3'
-    compile 'com.beust:jcommander:1.48'
     compile 'com.squareup:javapoet:1.7.0'
     compile 'com.google.guava:guava:19.0'
     compile 'org.projectlombok:lombok:1.16.10'
     compile 'org.apache.commons:commons-lang3:3.4'
+    compile 'com.alibaba:fastjson:1.2.28'
 
     jar {
         from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
