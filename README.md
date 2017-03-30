@@ -7,8 +7,8 @@
 ### Prerequisites
 - Java 7 and above
 
-[Download jar from here](http://omqdmqne7.bkt.clouddn.com/2017/03/mysql_table_toJavaBean.jar?attname=), or you can compile your own.<br/>
-[Download config file template from here](http://omqdmqne7.bkt.clouddn.com/2017/03/config.json?attname=), and replace with your config.
+[Download jar from here](https://storage.tianshuang.me/mysql_table_toJavaBean/mysql_table_toJavaBean.jar), or you can compile your own.<br/>
+[Download config file template from here](https://storage.tianshuang.me/mysql_table_toJavaBean/config.json), and replace with your config.
 
 Here is a quick example:
 ```
