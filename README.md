@@ -15,5 +15,9 @@ Here is a quick example:
 java -Dfile.encoding=UTF8 -jar mysql_table_toJavaBean.jar
 ```
 
+![mysql table](https://storage.tianshuang.me/mysql_table_toJavaBean/test_table.png)<br/>
+will generate:
+![JavaBean](https://storage.tianshuang.me/mysql_table_toJavaBean/TestJava.png)
+
 ### Contributions
 Welcome to contribute.
