@@ -22,6 +22,8 @@ class Config {
 
     private String packageName;
 
+    private boolean useComment;
+
     private boolean useLocalDate;
 
     private boolean useLocalDateTime;

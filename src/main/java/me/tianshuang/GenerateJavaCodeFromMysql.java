@@ -104,7 +104,7 @@ public class GenerateJavaCodeFromMysql {
                                     .addModifiers(Modifier.PRIVATE);
                             fieldList.add(new Field(clazz, fieldName));
                             String fieldComment = fieldCommentMap.get(metadata.getColumnName(i));
-                            if (!StringUtils.isNullOrEmpty(fieldComment)) {
+                            if (config.isUseComment() && !StringUtils.isNullOrEmpty(fieldComment)) {
                                 fieldSpecBuilder.addJavadoc(fieldComment + System.getProperty(LINE_SEPARATOR));
                             }
                             builder.addField(fieldSpecBuilder.build());
